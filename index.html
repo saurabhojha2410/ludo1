@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dice Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #70c1b3;
+        }
+        button {
+            margin-top: 20px;
+            padding: 15px 50px;
+            color: #fff;
+            background-color: #f4d35e;
+            border: none;
+            font-size: 20px;
+            border-radius: 20px;
+            box-shadow: 1px 3px #50514F;
+            outline: none;
+            transition: .3s;
+        }
+        button:hover, button:active {
+            background: #50514F;
+            cursor: pointer;
+            transform: translateY(5px);
+        }
+        .game {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .dice-container {
+            display: flex;
+            margin: 20px;
+        }
+        .container {
+            position: relative;
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            margin: 0 20px;
+        }
+        .dice {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s;
+        }
+        .side {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        .dot {
+            width: 20px;
+            height: 20px;
+            background-color: #f25f5c;
+            border-radius: 50%;
+        }
+
+        /* Dice faces positioning */
+        /* Face 1 */
+        .one .dot { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        /* Face 2 */
+        .two .dot:nth-child(1) { position: absolute; top: 25%; left: 25%; }
+        .two .dot:nth-child(2) { position: absolute; top: 75%; left: 75%; }
+        /* Face 3 */
+        .three .dot:nth-child(1) { position: absolute; top: 25%; left: 25%; }
+        .three .dot:nth-child(2) { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .three .dot:nth-child(3) { position: absolute; top: 75%; left: 75%; }
+        /* Face 4 */
+        .four .dot:nth-child(1) { position: absolute; top: 25%; left: 25%; }
+        .four .dot:nth-child(2) { position: absolute; top: 75%; left: 25%; }
+        .four .dot:nth-child(3) { position: absolute; top: 25%; left: 75%; }
+        .four .dot:nth-child(4) { position: absolute; top: 75%; left: 75%; }
+        /* Face 5 */
+        .five .dot:nth-child(1) { position: absolute; top: 25%; left: 25%; }
+        .five .dot:nth-child(2) { position: absolute; top: 75%; left: 25%; }
+        .five .dot:nth-child(3) { position: absolute; top: 25%; left: 75%; }
+        .five .dot:nth-child(4) { position: absolute; top: 75%; left: 75%; }
+        .five .dot:nth-child(5) { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        /* Face 6 */
+        .six .dot:nth-child(1) { position: absolute; top: 25%; left: 25%; }
+        .six .dot:nth-child(2) { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); }
+        .six .dot:nth-child(3) { position: absolute; top: 25%; left: 75%; }
+        .six .dot:nth-child(4) { position: absolute; top: 75%; left: 25%; }
+        .six .dot:nth-child(5) { position: absolute; top: 75%; left: 50%; transform: translateX(-50%); }
+        .six .dot:nth-child(6) { position: absolute; top: 75%; left: 75%; }
+    </style>
+</head>
+<body>
+    <h1>Dice Game</h1>
+    <div>
+        <label for="player1">Player 1:</label>
+        <input type="text" id="player1" placeholder="Enter name">
+        <label for="player2">Player 2:</label>
+        <input type="text" id="player2" placeholder="Enter name">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div class="game" id="game" style="display:none;">
+        <h2 id="turn-info"></h2>
+        <div class="dice-container">
+            <div id="dice1" class="container dice show-1">
+                <div class="side one"><div class="dot"></div></div>
+                <div class="side two"><div class="dot"></div><div class="dot"></div></div>
+                <div class="side three"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                <div class="side four"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                <div class="side five"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                <div class="side six"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            </div>
+        </div>
+        <button id="roll-dice">Roll Dice</button>
+        <p id="score-info"></p>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+    <script>
+        let currentPlayer, player1, player2, scores;
+
+        function startGame() {
+            player1 = document.getElementById('player1').value || 'Player 1';
+            player2 = document.getElementById('player2').value || 'Player 2';
+            scores = { [player1]: 0, [player2]: 0 };
+            currentPlayer = player1;
+            localStorage.setItem('scores', JSON.stringify(scores));
+            localStorage.setItem('currentPlayer', currentPlayer);
+            document.getElementById('game').style.display = 'block';
+            updateScore();
+            updateTurnInfo();
+        }
+
+        function rollDice() {
+            const roll = Math.floor(Math.random() * 6) + 1;
+            animateDice(roll);
+            updateScore(roll);
+        }
+
+        function animateDice(value) {
+            const dice = document.getElementById('dice1');
+            dice.className = 'container dice show-' + value;
+        }
+
+        function updateScore(roll = 0) {
+            scores[currentPlayer] += roll;
+            localStorage.setItem('scores', JSON.stringify(scores));
+            if (scores[currentPlayer] >= 30) {
+                alert(currentPlayer + ' wins!');
+                resetGame();
+            } else {
+                currentPlayer = currentPlayer === player1 ? player2 : player1;
+                localStorage.setItem('currentPlayer', currentPlayer);
+                updateTurnInfo();
+            }
+            document.getElementById('score-info').textContent = `${player1}: ${scores[player1]} | ${player2}: ${scores[player2]}`;
+        }
+
+        function updateTurnInfo() {
+            document.getElementById('turn-info').textContent = `${currentPlayer}'s turn`;
+        }
+
+        function resetGame() {
+            localStorage.clear();
+            scores = { [player1]: 0, [player2]: 0 };
+            currentPlayer = player1;
+            updateScore();
+            updateTurnInfo();
+        }
+
+        document.getElementById('roll-dice').addEventListener('click', rollDice);
+    </script>
+</body>
+</html>
